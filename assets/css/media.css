@@ -1,0 +1,11 @@
+/* WP Media Usage in the Media Library: the Unused mark on a grid thumbnail, the pills in the list and the details, the Check usage button. */
+.wmu-badge{position:absolute;top:6px;left:6px;z-index:3;padding:4px 7px;border-radius:10px;background:#d63638;color:#fff;font-size:11px;font-weight:600;line-height:1;box-shadow:0 1px 2px rgba(0,0,0,.35);pointer-events:none}
+.wmu-pill{display:inline-block;padding:3px 7px;border-radius:10px;background:#d63638;color:#fff;font-size:11px;font-weight:600;line-height:1.2}
+.wmu-pill--ignored{background:#787c82}
+.wmu-muted{color:#646970}
+.wmu-usage{padding-top:6px;line-height:1.5}
+.wmu-scan-box{display:inline-flex;align-items:center;gap:10px;flex-wrap:wrap;vertical-align:top}
+.wmu-scan-box .page-title-action{margin-left:4px}
+.wmu-status{color:#646970;font-size:13px;position:relative;top:-2px}
+.column-wmu_usage{width:18%}
+.media-toolbar .wmu-ignore-selected{margin-left:8px}
