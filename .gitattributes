@@ -8,3 +8,4 @@
 /CLAUDE.md      export-ignore
 /tests          export-ignore
 /tests/**       export-ignore
+/.gitignore     export-ignore

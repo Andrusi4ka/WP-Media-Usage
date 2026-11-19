@@ -91,25 +91,40 @@ class WMU_Extract {
 
     // Attachment IDs named in a text (HTML, shortcodes, blocks, CSS): [id, …].
     public static function ids_from_text($text) {
-        $text = (string) $text;
         $ids = array();
-        $add = function ($list) use (&$ids) { foreach ($list as $id) { if ($id > 0) { $ids[(int) $id] = true; } } };
-        foreach (self::layers($text) as $t) {
-            // The classes and links WordPress writes: wp-image-12, attachment_12 (a caption's id), wp-att-12 (an image link's rel).
-            if (preg_match_all('/\b(?:wp-image-|attachment_|wp-att-)(\d+)\b/', $t, $m)) { $add($m[1]); }
-            // attachment_id=12 in a link; ?id=12 after a file in the uploads folder (WPBakery's Design Options backgrounds).
-            if (preg_match_all('/[?&]attachment_id=(\d+)/', $t, $m)) { $add($m[1]); }
-            if (preg_match_all('~uploads/[^\s"\'<>()]*?\?id=(\d+)~i', $t, $m)) { $add($m[1]); }
-            // An attribute: image="12", images='1,2,3', bg_image="12", data-id="12" (shortcodes and HTML).
-            if (preg_match_all('/([A-Za-z][A-Za-z0-9_\-]*)\s*=\s*(["\'])\s*(\d+(?:\s*,\s*\d+)*)\s*\2/', $t, $m, PREG_SET_ORDER)) {
-                foreach ($m as $a) { if (self::media_key($a[1]) || in_array(strtolower($a[1]), array('data-id', 'data-attachment-id', 'data-image-id'), true)) { $add(self::id_list($a[3])); } }
-            }
-            // A JSON pair: "id":12 (a block's picture), "mediaId":12, "ids":[1,2], "image":"12".
-            if (preg_match_all('/"([A-Za-z][A-Za-z0-9_\-]*)"\s*:\s*(\[\s*\d+(?:\s*,\s*\d+)*\s*\]|"\d+(?:\s*,\s*\d+)*"|\d+)/', $t, $m, PREG_SET_ORDER)) {
-                foreach ($m as $a) { if ($a[1] === 'id' || self::media_key($a[1])) { $add(self::id_list(trim($a[2], '[]"'))); } }
+        foreach (self::layers((string) $text) as $t) {
+            foreach (array_merge(self::ids_marked($t), self::ids_in_attributes($t), self::ids_in_json($t)) as $id) {
+                if ($id > 0) { $ids[(int) $id] = true; }
             }
         }
         return array_keys($ids);
+    }
+    // What WordPress writes: wp-image-12, attachment_12 (a caption's id), wp-att-12 (an image link's rel), attachment_id=12 in a
+    // link; and ?id=12 after a file in the uploads folder (WPBakery's Design Options backgrounds).
+    private static function ids_marked($t) {
+        $out = array();
+        foreach (array('/\b(?:wp-image-|attachment_|wp-att-)(\d+)\b/', '/[?&]attachment_id=(\d+)/', '~uploads/[^\s"\'<>()]*?\?id=(\d+)~i') as $re) {
+            if (preg_match_all($re, $t, $m)) { $out = array_merge($out, array_map('intval', $m[1])); }
+        }
+        return $out;
+    }
+    // An attribute: image="12", images='1,2,3', bg_image="12", data-id="12" (shortcodes and HTML).
+    private static function ids_in_attributes($t) {
+        $out = array();
+        if (!preg_match_all('/([A-Za-z][A-Za-z0-9_\-]*)\s*=\s*(["\'])\s*(\d+(?:\s*,\s*\d+)*)\s*\2/', $t, $m, PREG_SET_ORDER)) { return $out; }
+        foreach ($m as $a) {
+            if (self::media_key($a[1]) || in_array(strtolower($a[1]), array('data-id', 'data-attachment-id', 'data-image-id'), true)) { $out = array_merge($out, self::id_list($a[3])); }
+        }
+        return $out;
+    }
+    // A JSON pair: "id":12 (a block's picture), "mediaId":12, "ids":[1,2], "image":"12".
+    private static function ids_in_json($t) {
+        $out = array();
+        if (!preg_match_all('/"([A-Za-z][A-Za-z0-9_\-]*)"\s*:\s*(\[\s*\d+(?:\s*,\s*\d+)*\s*\]|"\d+(?:\s*,\s*\d+)*"|\d+)/', $t, $m, PREG_SET_ORDER)) { return $out; }
+        foreach ($m as $a) {
+            if ($a[1] === 'id' || self::media_key($a[1])) { $out = array_merge($out, self::id_list(trim($a[2], '[]"'))); }
+        }
+        return $out;
     }
 
     // A serialized value or JSON read as data (no objects made from a serialized one); else the value as it was.
