@@ -5,6 +5,7 @@
  */
 define('ABSPATH', __DIR__.'/');
 require __DIR__.'/../includes/class-wmu-extract.php';
+require __DIR__.'/../includes/class-wmu-same.php';
 
 $failed = 0;
 function check($ok, $what) { global $failed; if (!$ok) { $failed++; fwrite(STDERR, "FAIL: $what\n"); } }
@@ -72,6 +73,13 @@ check(WMU_Extract::decode('O:8:"stdClass":1:{s:1:"a";i:1;}') instanceof __PHP_In
 $files = WMU_Extract::files_of('2026/11/big-scaled.jpg', array('file'=>'2026/11/big-scaled.jpg', 'original_image'=>'big.jpg', 'sizes'=>array('thumbnail'=>array('file'=>'big-150x150.jpg'), 'medium'=>array('file'=>'big-300x200.jpg'))), array('full-orig'=>array('file'=>'big-e1700000000.jpg')));
 check(same($files, array('2026/11/big-scaled.jpg', '2026/11/big.jpg', '2026/11/big-150x150.jpg', '2026/11/big-300x200.jpg', '2026/11/big-e1700000000.jpg')), 'Files: scaled, original, sizes, backups');
 check(WMU_Extract::files_of('flat.png', false) === array('flat.png'), 'A file outside year folders');
+
+// Exact copies: the file compared, the groups.
+check(WMU_Same::source('2026/11/big-scaled.jpg', array('original_image'=>'big.jpg')) === '2026/11/big.jpg', 'Copies: a scaled photo compared by its upload');
+check(WMU_Same::source('2026/11/big-e1700000000.jpg', array('original_image'=>'big.jpg'), true) === '2026/11/big-e1700000000.jpg', 'Copies: an edited image compared as it is now');
+check(WMU_Same::source('2026/11/doc.pdf', false) === '2026/11/doc.pdf' && WMU_Same::source('', array()) === '', 'Copies: no metadata, no file');
+check(WMU_Same::groups(array(9=>'a', 3=>'b', 5=>'a', 7=>'c', 4=>'a', 8=>'c')) === array('a'=>array(4, 5, 9), 'c'=>array(7, 8)), 'Copies: groups of two or more, IDs in order');
+check(WMU_Same::groups(array(1=>1000, 2=>2000)) === array(), 'Copies: no shared key, no group');
 
 if ($failed) { fwrite(STDERR, "$failed check(s) failed\n"); exit(1); }
 echo "WP Media Usage checks passed.\n";

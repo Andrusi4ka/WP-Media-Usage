@@ -1,14 +1,15 @@
 <?php
 /**
  * An attachment's mark, kept in its meta: _wmu_state (used / unused; none: not checked yet), _wmu_where (where it was found,
- * WMU_Scan's slot) and _wmu_ignored (1: never shown as Unused). And the queries of the filters Unused and Ignored.
+ * WMU_Scan's slot) and _wmu_ignored (1: never shown as Unused); dup: it has an exact copy (WMU_Copies). And the queries of
+ * the filters Unused and Ignored.
  */
 defined('ABSPATH') || exit;
 
 class WMU_Marks {
     public static function mark($id) {
         $state = get_post_meta($id, '_wmu_state', true);
-        return array('state'=>in_array($state, array('used', 'unused'), true) ? $state : '', 'ignored'=>(bool) get_post_meta($id, '_wmu_ignored', true));
+        return array('state'=>in_array($state, array('used', 'unused'), true) ? $state : '', 'ignored'=>(bool) get_post_meta($id, '_wmu_ignored', true), 'dup'=>WMU_Copies::has($id));
     }
 
     public static function ignore($id, $on) {

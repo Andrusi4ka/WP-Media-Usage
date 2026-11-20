@@ -1,7 +1,11 @@
-/* WP Media Usage in the Media Library: the Unused mark on a grid thumbnail, the pills in the list and the details, the switch. */
-.wmu-badge{position:absolute;top:6px;left:6px;z-index:3;padding:4px 7px;border-radius:10px;background:#d63638;color:#fff;font-size:11px;font-weight:600;line-height:1;box-shadow:0 1px 2px rgba(0,0,0,.35);pointer-events:none}
+/* WP Media Usage in the Media Library: the Unused and Duplicate marks on a grid thumbnail (one under the other), the pills in
+   the list and the details, the switches. */
+.wmu-badges{position:absolute;top:6px;left:6px;z-index:3;display:flex;flex-direction:column;align-items:flex-start;gap:4px;pointer-events:none}
+.wmu-badge{padding:4px 7px;border-radius:10px;background:#d63638;color:#fff;font-size:11px;font-weight:600;line-height:1;box-shadow:0 1px 2px rgba(0,0,0,.35)}
 .wmu-pill{display:inline-block;padding:3px 7px;border-radius:10px;background:#d63638;color:#fff;font-size:11px;font-weight:600;line-height:1.2}
 .wmu-pill--ignored{background:#787c82}
+.wmu-badge--dup,.wmu-pill--dup{background:#996800}
+.wmu-part{display:inline-flex;align-items:center;gap:8px}
 .wmu-muted{color:#646970}
 .wmu-usage{padding-top:6px;line-height:1.5}
 .wmu-scan-box{display:inline-flex;align-items:center;gap:12px;flex-wrap:wrap;margin-left:12px;vertical-align:middle}
@@ -29,3 +33,32 @@
 .media-frame .media-toolbar:has(.wmu-tip:hover),.media-frame .media-toolbar:has(.wmu-tip:focus-visible){overflow:visible}
 .column-wmu_usage{width:18%}
 .media-toolbar .wmu-ignore-selected{margin-left:8px}
+/* The Duplicates button beside Mark duplicate files, and its window (modal.js): each group, each copy's thumbnail beside where it is used. */
+.wmu-show-dupes.button{min-height:26px;line-height:24px;padding:0 10px}
+body.wmu-modal-open{overflow:hidden}
+.wmu-modal{position:fixed;inset:0;z-index:170000;display:flex;align-items:center;justify-content:center;padding:30px}
+.wmu-modal[hidden]{display:none}
+.wmu-modal__backdrop{position:absolute;inset:0;background:rgba(0,0,0,.7)}
+.wmu-modal__dialog{position:relative;display:flex;flex-direction:column;width:min(960px,100%);max-height:100%;background:#fff;box-shadow:0 5px 15px rgba(0,0,0,.7)}
+.wmu-modal__head{display:flex;align-items:center;gap:12px;padding:0 0 0 16px;border-bottom:1px solid #dcdcde}
+.wmu-modal__head h2{flex:1;margin:0;font-size:22px;line-height:50px}
+.wmu-modal__close{width:50px;height:50px;border:0;border-left:1px solid #dcdcde;background:none;color:#646970;cursor:pointer}
+.wmu-modal__close:hover,.wmu-modal__close:focus-visible{color:#135e96}
+.wmu-modal__close .dashicons{font-size:22px;width:22px;height:22px}
+.wmu-modal__help{margin:12px 16px 0;color:#646970}
+.wmu-modal__status{margin:8px 16px 0;color:#996800;font-weight:500}
+.wmu-modal__status[hidden]{display:none}
+.wmu-modal__body{overflow:auto;padding:4px 16px 16px}
+.wmu-group{margin-top:16px;border:1px solid #dcdcde;border-radius:4px}
+.wmu-group h3{margin:0;padding:8px 12px;border-bottom:1px solid #dcdcde;background:#f6f7f7;font-size:13px}
+.wmu-copy{display:flex;gap:12px;align-items:flex-start;padding:10px 12px}
+.wmu-copy+.wmu-copy{border-top:1px solid #f0f0f1}
+.wmu-copy__thumb{flex:0 0 80px;width:80px;height:80px;display:flex;align-items:center;justify-content:center;background:#f0f0f1}
+.wmu-copy__thumb img{max-width:80px;max-height:80px;width:auto;height:auto;object-fit:contain}
+.wmu-copy__info{flex:1;min-width:0;line-height:1.6}
+.wmu-copy__name{font-weight:600;word-break:break-word}
+.wmu-copy__usage{word-break:break-word}
+@media (max-width:600px){.wmu-modal{padding:0}.wmu-modal__refresh{display:none}}
+/* Delete permanently under a copy's usage (WordPress's red link button); a copy being deleted fades. */
+.wmu-copy .wmu-delete{margin-top:4px;padding:0;font-size:13px}
+.wmu-copy--busy{opacity:.5;pointer-events:none}

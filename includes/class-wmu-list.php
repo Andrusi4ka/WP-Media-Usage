@@ -1,6 +1,7 @@
 <?php
 /**
- * The Media Library's list view: a Usage column, and the bulk actions Ignore / Stop ignoring in usage check with their notice.
+ * The Media Library's list view: a Usage column (Unused / where used while Mark unused files is ticked; Duplicate and its copies
+ * while Mark duplicate files is), and the bulk actions Ignore / Stop ignoring in usage check with their notice.
  */
 defined('ABSPATH') || exit;
 
@@ -10,6 +11,7 @@ class WMU_List {
     public static function init() {
         add_filter('manage_media_columns', array(__CLASS__, 'columns'));
         add_action('manage_media_custom_column', array(__CLASS__, 'column'), 10, 2);
+        if (!WMU_Settings::on('unused')) { return; }
         add_filter('bulk_actions-upload', array(__CLASS__, 'bulk_actions'));
         add_filter('handle_bulk_actions-upload', array(__CLASS__, 'bulk_handle'), 10, 3);
         add_action('admin_notices', array(__CLASS__, 'bulk_notice'));
@@ -21,12 +23,18 @@ class WMU_List {
     }
     public static function column($name, $id) {
         if ($name !== 'wmu_usage') { return; }
+        $parts = array_filter(array(WMU_Settings::on('unused') ? self::usage($id) : '', WMU_Settings::on('dupes') ? self::copies($id) : ''));
+        echo $parts ? implode('<br>', $parts) : '<span class="wmu-muted">—</span>'; // phpcs:ignore WordPress.Security.EscapeOutput -- built from escaped parts (WMU_Places, WMU_Copies).
+    }
+    private static function usage($id) {
         $mark = WMU_Marks::mark($id);
-        if ($mark['state'] === '') { echo '<span class="wmu-muted">—</span>'; return; }
-        // phpcs:disable WordPress.Security.EscapeOutput -- built from escaped parts (WMU_Places).
-        if ($mark['ignored']) { echo WMU_Places::pill(__('Ignored', 'wp-media-usage'), true).' '; }
-        echo $mark['state'] === 'unused' ? WMU_Places::pill(__('Unused', 'wp-media-usage')) : WMU_Places::where_html($id);
-        // phpcs:enable
+        if ($mark['state'] === '') { return ''; }
+        return ($mark['ignored'] ? WMU_Places::pill(__('Ignored', 'wp-media-usage'), true).' ' : '')
+            .($mark['state'] === 'unused' ? WMU_Places::pill(__('Unused', 'wp-media-usage')) : WMU_Places::where_html($id));
+    }
+    private static function copies($id) {
+        $copies = WMU_Copies::html($id);
+        return $copies !== '' ? WMU_Places::pill(__('Duplicate', 'wp-media-usage'), false, 'dup').' '.$copies : '';
     }
 
     public static function bulk_actions($actions) {

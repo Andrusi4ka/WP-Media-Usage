@@ -71,7 +71,8 @@ class WMU_Places {
         $where = self::where_html($id);
         return esc_html__('Used in:', 'wp-media-usage').' '.($where !== '' ? $where : esc_html__('the site', 'wp-media-usage')).$ignored;
     }
-    public static function pill($text, $grey = false) {
-        return '<span class="wmu-pill'.($grey ? ' wmu-pill--ignored' : '').'">'.esc_html($text).'</span>';
+    // Red; grey (Ignored); $kind 'dup': Duplicate's colour.
+    public static function pill($text, $grey = false, $kind = '') {
+        return '<span class="wmu-pill'.($grey ? ' wmu-pill--ignored' : '').($kind === 'dup' ? ' wmu-pill--dup' : '').'">'.esc_html($text).'</span>';
     }
 }

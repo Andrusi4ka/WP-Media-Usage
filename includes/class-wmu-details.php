@@ -1,6 +1,7 @@
 <?php
 /**
- * An attachment's details (the grid's window and its edit screen): Usage (where it is used, or Unused) and the Ignore box.
+ * An attachment's details (the grid's window and its edit screen): Duplicate (its copies, while Mark duplicate files is ticked),
+ * Usage (where it is used, or Unused) and the Ignore box (while Mark unused files is).
  * A hidden wmu_form field tells an unchecked box (not sent) from a form without it.
  */
 defined('ABSPATH') || exit;
@@ -12,6 +13,12 @@ class WMU_Details {
     }
 
     public static function fields($fields, $post) {
+        $copies = WMU_Settings::on('dupes') ? WMU_Copies::html($post->ID) : '';
+        if ($copies !== '') {
+            $fields['wmu_copies'] = array('label'=>__('Duplicate', 'wp-media-usage'), 'input'=>'html', 'html'=>'<div class="wmu-usage">'.$copies.'</div>',
+                'helps'=>__('The same file was uploaded again. Keep the one in use, delete the others.', 'wp-media-usage'));
+        }
+        if (!WMU_Settings::on('unused')) { return $fields; }
         $fields['wmu_usage'] = array('label'=>__('Usage', 'wp-media-usage'), 'input'=>'html', 'html'=>'<div class="wmu-usage">'.WMU_Places::usage_html($post->ID).'</div>');
         $fields['wmu_ignore'] = array('label'=>__('Usage check', 'wp-media-usage'), 'input'=>'html', 'html'=>self::ignore_box($post->ID),
             'helps'=>__('For a file used outside the site, e.g. in newsletters or on social media.', 'wp-media-usage'));
@@ -25,7 +32,7 @@ class WMU_Details {
     }
 
     public static function save($post, $data) {
-        if (isset($data['wmu_form']) && current_user_can('edit_post', $post['ID'])) { WMU_Marks::ignore((int) $post['ID'], !empty($data['wmu_ignore'])); }
+        if (WMU_Settings::on('unused') && isset($data['wmu_form']) && current_user_can('edit_post', $post['ID'])) { WMU_Marks::ignore((int) $post['ID'], !empty($data['wmu_ignore'])); }
         return $post;
     }
 }

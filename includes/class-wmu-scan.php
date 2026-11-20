@@ -63,6 +63,11 @@ class WMU_Scan {
         if (count($slot['s']) < self::KEEP) { $slot['s'][] = $source; }
     }
 
+    // Where it is, for the progress beside the checkbox: the files checked (resolve).
+    public static function progress($state) {
+        return (string) $state['total'];
+    }
+
     // The scan done: its numbers kept (timed from its start), its state removed.
     public static function finish($state) {
         delete_option(self::STATE);
